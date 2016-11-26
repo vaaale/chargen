@@ -2,7 +2,8 @@ from keras.callbacks import Callback
 import numpy as numpy
 import sys
 
-class SampleModelCallbac(Callback):
+
+class SampleModelCallback(Callback):
 
     def __init__(self, int_to_char, model, dataX, n_vocab):
         super().__init__()
