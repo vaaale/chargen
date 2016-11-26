@@ -1,15 +1,13 @@
 # Larger LSTM Network to Generate Text for Alice in Wonderland
 import os
-import sys
-
 import pickle
-import numpy
 from keras.callbacks import ModelCheckpoint, Callback
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import LSTM
 from keras.models import Sequential
 import dataset as ds
+from sample_model import SampleModelCallback
 
 batches_per_epoch = 1000
 batch_size = 64
@@ -21,7 +19,6 @@ generator = ds.dataset(batch_size, seq_length)
 # define the LSTM model
 model = Sequential()
 model.add(LSTM(512, input_shape=(seq_length, 1), return_sequences=True))
-#model.add(LSTM(512, input_shape=(X.shape[1], X.shape[2]), return_sequences=True))
 model.add(Dropout(0.2))
 
 model.add(LSTM(512, return_sequences=True))
@@ -43,10 +40,11 @@ model.compile(loss='categorical_crossentropy', optimizer='adam')
 filepath = "weights-improvement-{epoch:02d}-{loss:.4f}-bigger.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
 
+sample = SampleModelCallback(model)
 
-callbacks_list = [checkpoint]
+callbacks_list = [checkpoint, sample]
 # fit the model
-history = model.fit_generator(generator=generator, nb_epoch=40, samples_per_epoch=samples_per_epoch, callbacks=callbacks_list, nb_worker=4, pickle_safe=True)
+history = model.fit_generator(generator=generator, nb_epoch=40, samples_per_epoch=samples_per_epoch, callbacks=callbacks_list)
 
 pickle.dump(open('hist.pkl', 'wb'), history)
 

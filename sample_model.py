@@ -1,23 +1,25 @@
 from keras.callbacks import Callback
 import numpy as numpy
 import sys
+import dataset as ds
 
 
 class SampleModelCallback(Callback):
 
-    def __init__(self, int_to_char, model, dataX, n_vocab):
+    def __init__(self, model):
         super().__init__()
-        self.int_to_char = int_to_char
         self.model = model
-        self.dataX = dataX
-        self.n_vocab = n_vocab
+        self.int_to_char = ds.meta()['int_to_char']
+        self.n_vocab = ds.meta()['vocab_size']
+        self.generator = ds.sample(100, 40)
 
     def on_train_begin(self, logs={}):
         pass
 
     def on_epoch_end(self, epoch, logs={}):
-        start = numpy.random.randint(0, len(self.dataX) - 1)
-        pattern = self.dataX[start]
+        dataX, _ = next(self.generator)
+        start = numpy.random.randint(0, len(dataX) - 1)
+        pattern = dataX[start]
         print("Seed:")
         print("\"", ''.join([self.int_to_char[value] for value in pattern]), "\"")
         # generate characters

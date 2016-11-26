@@ -5,10 +5,10 @@ import numpy as numpy
 from keras.utils import np_utils
 
 # load ascii text and covert to lowercase
-filename = "politikk-tiny.txt"
+filename = "politikk.txt"
 meta_file = "meta.pkl"
 if not os.path.isfile(meta_file):
-    _raw_text = open(filename).read()
+    _raw_text = open(filename, encoding='UTF-8').read()
     _raw_text = _raw_text.lower()
     # create mapping of unique chars to integers
     _chars = sorted(list(set(_raw_text)))
@@ -38,12 +38,16 @@ def vocab_length():
     return n_vocab
 
 
+def meta():
+    return _meta
+
+
 def dataset(batchsize=64, seq_length=40):
     chunk_size = seq_length + batchsize
     num_chunks = int(_meta['size'] / chunk_size)
 
     while True:
-        with open(filename) as f:
+        with open(filename, encoding='UTF-8') as f:
             for chunk in range(0, num_chunks, 1):
                 # Read data for one batch
                 raw_text = f.read(chunk_size)
@@ -57,14 +61,41 @@ def dataset(batchsize=64, seq_length=40):
                     seq_out = raw_text[i + seq_length]
                     dataX.append([_char_to_int[char] for char in seq_in])
                     dataY.append(_char_to_int[seq_out])
+
                 n_patterns = len(dataX)
                 # reshape X to be [samples, time steps, features]
                 X = numpy.reshape(dataX, (n_patterns, seq_length, 1))
                 # normalize
-                X /= float(n_vocab)
+                X = X / float(n_vocab)
                 # one hot encode the output variable
                 y = np_utils.to_categorical(dataY, nb_classes=n_vocab)
+
                 yield (X, y)
+
+
+def sample(batchsize=64, seq_length=40):
+    chunk_size = seq_length + batchsize
+    num_chunks = int(_meta['size'] / chunk_size)
+
+    while True:
+        with open(filename, encoding='UTF-8') as f:
+            for chunk in range(0, num_chunks, 1):
+                # Read data for one batch
+                raw_text = f.read(chunk_size)
+                raw_text = raw_text.lower()
+
+                # prepare the dataset of input to output pairs encoded as integers
+                dataX = []
+                dataY = []
+                for i in range(0, chunk_size - seq_length, 1):
+                    seq_in = raw_text[i:i + seq_length]
+                    seq_out = raw_text[i + seq_length]
+                    dataX.append([_char_to_int[char] for char in seq_in])
+                    dataY.append(_char_to_int[seq_out])
+
+                yield (dataX, dataY)
+
+
 
 
 if __name__ == '__main__':
