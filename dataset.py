@@ -3,12 +3,14 @@ import pickle
 
 import numpy as numpy
 from keras.utils import np_utils
+import re
 
 # load ascii text and covert to lowercase
 filename = "politikk.txt"
 meta_file = "meta.pkl"
 if not os.path.isfile(meta_file):
     _raw_text = open(filename, encoding='UTF-8').read()
+    #_raw_text = re.sub('[^\sa-zA-Z0-9æøå,.:?–]+', '', _raw_text)
     _raw_text = _raw_text.lower()
     # create mapping of unique chars to integers
     _chars = sorted(list(set(_raw_text)))
@@ -22,9 +24,13 @@ if not os.path.isfile(meta_file):
         'int_to_char': _int_to_char,
         'vocab': _chars
     }
+    with open('clean' + filename, 'w', encoding='UTF-8') as out:
+        out.write(_raw_text)
     pickle.dump(_meta, open(meta_file, 'wb'))
 else:
     _meta = pickle.load(open(meta_file, 'rb'))
+
+filename = 'clean' + filename
 
 n_chars = _meta['size']
 n_vocab = _meta['vocab_size']
@@ -32,6 +38,7 @@ _char_to_int = _meta['char_to_int']
 _int_to_char = _meta['int_to_char']
 print("Total Characters: ", n_chars)
 print("Total Vocab: ", n_vocab)
+print(_meta['vocab'])
 
 
 def vocab_length():
@@ -45,7 +52,7 @@ def meta():
 def dataset(batchsize=64, seq_length=40):
     chunk_size = seq_length + batchsize
     num_chunks = int(_meta['size'] / chunk_size)
-
+    # re.sub('[^\sa-zA-Z0-9æøå,.:?\–]+', '', ' '.join(segs[5:])
     while True:
         with open(filename, encoding='UTF-8') as f:
             for chunk in range(0, num_chunks, 1):
