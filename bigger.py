@@ -11,9 +11,9 @@ from sample_model import SampleModelCallback
 
 
 batches_per_epoch = 1500
-batch_size = 64
+batch_size = 256
 samples_per_epoch = batches_per_epoch * batch_size
-seq_length = 100
+seq_length = 50
 vocab_length = ds.vocab_length()
 generator = ds.dataset(batch_size, seq_length)
 
@@ -53,7 +53,7 @@ if os.path.isfile(filename):
     print('Resuming training')
     model.load_weights(filename)
 
-model.compile(loss='categorical_crossentropy', optimizer='adam')
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
 # define the checkpoint
 filepath = "weights-improvement-{epoch:02d}-{loss:.4f}-bigger.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
@@ -62,7 +62,7 @@ remote = RemoteMonitor(root='http://localhost:9000')
 
 callbacks_list = [checkpoint, sample, remote]
 # fit the model
-history = model.fit_generator(generator=generator, nb_epoch=200, samples_per_epoch=samples_per_epoch, callbacks=callbacks_list)
+history = model.fit_generator(generator=generator, nb_epoch=1000, samples_per_epoch=samples_per_epoch, callbacks=callbacks_list)
 
 
 

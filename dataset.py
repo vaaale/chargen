@@ -6,7 +6,7 @@ from keras.utils import np_utils
 import re
 
 # load ascii text and covert to lowercase
-filename = "politikk.txt"
+filename = "allcode.txt"
 meta_file = "meta.pkl"
 if not os.path.isfile(meta_file):
     _raw_text = open(filename, encoding='UTF-8').read()
